@@ -1,0 +1,7 @@
+{
+    "tasks": {
+        "validator-server": "deno run --allow-net validator_server.ts",
+        "keygen": "deno run key_generator.ts",
+        "send": "deno run --allow-net --allow-read send.ts",
+    }
+}
