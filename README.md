@@ -3,7 +3,7 @@ Example code and validator for the [proposed &lt;podcast:events> tag](https://gi
 
 ---
 
-There are two tasks you can run to test the _sending_ side.  After cloning the repo locally and changing to the local repo directory root:
+There are two tasks you can run to test the _sending_ side.  After [ensuring deno is installed](https://deno.land/#installation), cloning this GitHub repo locally, and changing to the local repo directory root:
 
 ## Generate an RSA public/private keypair
 `deno task keygen`: generates a new RSA keypair, and dumps out the private key pem, the public key pem, and the public key JWK set json
@@ -22,7 +22,7 @@ There are two tasks you can run to test the _sending_ side.  After cloning the r
 
 ---
 
-There is one task you can run to test the _receiving_ side.   After cloning the repo locally and changing to the local repo directory root:
+There is one task you can run to test the _receiving_ side.   After [ensuring deno is installed](https://deno.land/#installation), cloning this GitHub repo locally and changing to the local repo directory root:
 
 ## Host a podcast-events validation endpoint on your local machine
 `deno task validator-server`: starts a local http server
