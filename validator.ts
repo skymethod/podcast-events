@@ -84,18 +84,18 @@ export default {
 async function fetchPublicKeyFromJwkSetUrl(jku: string, kid: string): Promise<CryptoKey> {
     // ensure the jku is a https url
     const u = tryParseUrl(jku);
-    if (u === undefined) throw new ClientError(`Bad jku ${jku}, expected url`);
-    if (u.protocol !== 'https:') throw new ClientError(`Bad jku ${jku}, expected https url`);
+    if (u === undefined) throw new Error(`Bad jku ${jku}, expected url`);
+    if (u.protocol !== 'https:') throw new Error(`Bad jku ${jku}, expected https url`);
 
     // fetch the JWK Set and make sure it has the expected 'keys' array
     // https://www.rfc-editor.org/rfc/rfc7517
     const res = await fetch(jku);
     const { keys } = await res.json();
-    if (!Array.isArray(keys)) throw new ClientError(`No 'keys' key found at ${jku}`);
+    if (!Array.isArray(keys)) throw new Error(`No 'keys' key found at ${jku}`);
 
     // find the key specified by 'kid'
     const key = keys.find(v => v.kid === kid);
-    if (!key) throw new ClientError(`Key ID ${kid} not found at ${jku}`);
+    if (!key) throw new Error(`Key ID ${kid} not found at ${jku}`);
 
     // load the key
     return await importPublicJwk(key);
