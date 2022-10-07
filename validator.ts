@@ -12,21 +12,21 @@ export default {
             const { method, headers } = request;
 
             // the podcast-events protocol only supports POST
-            if (method !== 'POST') throw new ClientError('This endpoint only supports POST requests');
+            if (method !== 'POST') throw new ClientError('This endpoint only supports POST requests', 405);
 
             // check for a JWT-looking Authorization header
             const authorization = headers.get('authorization');
-            if (typeof authorization !== 'string') throw new ClientError('Expected Authorization header');
+            if (typeof authorization !== 'string') throw new ClientError('Expected Authorization header', 401);
             const m = /^Bearer ([^\s]+)$/.exec(authorization);
-            if (!m) throw new ClientError(`Bad Authorization header, expected 'Bearer <jwt>`);
+            if (!m) throw new ClientError(`Bad Authorization header, expected 'Bearer <jwt>`, 403);
             const [ _, jwt ] = m;
 
             // read request body payload as raw bytes
-            const contentBytes = await request.arrayBuffer();
+            const contentBytes = await ClientError.wrapWith(400, async () => await request.arrayBuffer())();
 
             // decode JWT passed in Authorization header, validate it has all of the claims needed by the podcast-events spec
             // also verifies the contentSha256 claim matches what we received in the request body
-            const { sub, jku, kid } = await decodeJwt({ jwt, contentBytes, publicKeyProvider: fetchPublicKeyFromJwkSetUrl });
+            const { sub, jku, kid } = await ClientError.wrapWith(403, async () => await decodeJwt({ jwt, contentBytes, publicKeyProvider: fetchPublicKeyFromJwkSetUrl }))();
             if (typeof sub !== 'string') throw new ClientError(`Missing 'sub' claim in JWT`);
             if (typeof jku !== 'string') throw new ClientError(`Missing 'jku' claim in JWT`);
             if (typeof kid !== 'string') throw new ClientError(`Missing 'kid' claim in JWT`);
@@ -75,7 +75,7 @@ export default {
 
             return newJsonResponse({ validListenEvents: events.length, feedUrl: sub, jwk: `${jku}#${kid}` });
         } catch (e) {
-            return newJsonResponse({ 'error': e.message }, e instanceof ClientError ? 400 : 500);
+            return newJsonResponse({ 'error': e.message }, e instanceof ClientError ? e.status : 500);
         }
     }
 
@@ -108,7 +108,21 @@ function newJsonResponse(obj: unknown, status = 200) {
 //
 
 class ClientError extends Error {
-    constructor(message: string) {
+    readonly status: number;
+
+    constructor(message: string, status = 400) {
         super(message);
+        this.status = status;
     }
+
+    static wrapWith<T>(status: number, fn: () => Promise<T>): () => Promise<T> {
+        return async () => {
+            try {
+                return await fn();
+            } catch (e) {
+                throw new ClientError(e.message, status);
+            }
+        }
+    }
+
 }
