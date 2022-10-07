@@ -33,4 +33,4 @@ There is one task you can run to act as the _receiving_ side.  After [ensuring d
 - This makes it useful to test your event sender code
 - Source code entry point: [validator_server.ts](validator_server.ts) (with [validator.ts](validator.ts) as the handler)
 
-The validator is also hosted on: https://podcast-events.op3.dev
+The validator is also hosted on: https://podcast-events-validator.op3.dev
